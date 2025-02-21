@@ -211,5 +211,114 @@
             }
         }, 1000);
     </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+  const gallery = document.querySelector(".gallery");
+  const galleryContainer = document.querySelector(".gallery-container");
+  const items = document.querySelectorAll(".gallery-item");
+  const controlsContainer = document.querySelector(".gallery-controls");
+  let currentIndex = 2; // Posición inicial en el centro
+  let startX = 0;
+  let endX = 0;
+  let autoSlideInterval;
+  
+  function updateGallery() {
+      items.forEach((item, index) => {
+          item.classList.remove("gallery-item-1", "gallery-item-2", "gallery-item-3", "gallery-item-4", "gallery-item-5");
+          let newIndex = (index - currentIndex + items.length) % items.length + 1;
+          item.classList.add(`gallery-item-${newIndex}`);
+      });
+  }
+
+  function handleTouchStart(event) {
+      startX = event.touches[0].clientX;
+      clearInterval(autoSlideInterval); // Detiene el auto-slide temporalmente
+  }
+
+  function handleTouchEnd(event) {
+      endX = event.changedTouches[0].clientX;
+      if (startX > endX + 50) {
+          currentIndex = (currentIndex + 1) % items.length;
+      } else if (startX < endX - 50) {
+          currentIndex = (currentIndex - 1 + items.length) % items.length;
+      }
+      updateGallery();
+      startAutoSlide(); // Reinicia el auto-slide
+  }
+
+  function startAutoSlide() {
+      clearInterval(autoSlideInterval);
+      autoSlideInterval = setInterval(() => {
+          currentIndex = (currentIndex + 1) % items.length;
+          updateGallery();
+      }, 1000); // Cambia de imagen cada segundo
+  }
+
+  galleryContainer.addEventListener("touchstart", handleTouchStart);
+  galleryContainer.addEventListener("touchend", handleTouchEnd);
+
+  updateGallery();
+  startAutoSlide();
+});
+    
+    </script> 
+    <script>
+        $(".front").click(function() {
+	        if ( $(".library-card.envelope").hasClass("card-in") ) {
+		    $(".library-card.envelope").toggleClass("card-in");
+	    }
+	        $(".library-card.envelope").toggleClass("card-out");
+        });
+
+        $(".submit").click(function(e) {
+	    e.preventDefault();
+	    $(".library-card.envelope").toggleClass("card-in");
+	        if ( $(".library-card.envelope").hasClass("card-out") ) {
+		$(".library-card.envelope").toggleClass("card-out");
+	}
+	    $('.stamp').html("Thanks for RSVP-ing!");
+	    setTimeout(function(){ $('.stamp').html("Click here to RSVP"); }, 3000);
+	    setTimeout(function(){ document.location.href = document.location.href; }, 1500);
+    });
+    </script>
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+    document.querySelector("#rsvp-form").addEventListener("submit", async function(event) {
+    event.preventDefault();
+    
+    const formData = {
+      name: document.querySelector("#name").value,
+      phone: document.querySelector("#phone").value,
+      email: document.querySelector("#email").value,
+      children: document.querySelector("#children").value
+    };
+
+    try {
+      const response = await fetch("/api/index", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData)
+      });
+      const data = await response.json();
+      console.log("Respuesta del servidor:", data);
+      
+      // Mostrar mensaje de confirmación
+      document.querySelector("#mensaje-confirmacion").innerHTML = "¡Gracias por confirmar tu asistencia!";
+      
+      // Opcional: redirigir automáticamente a WhatsApp
+      if (data.whatsappLink) {
+        window.location.href = data.whatsappLink;
+      }
+      
+      // También puedes limpiar el formulario:
+      document.querySelector("#rsvp-form").reset();
+    } catch (error) {
+      console.error("Error al enviar el formulario:", error);
+      document.querySelector("#mensaje-confirmacion").innerHTML = "Error al conectar con el servidor.";
+    }
+  });
+});
+</script>
+    <p id="mensaje-confirmacion"></p>
 </body>
 </html>
